@@ -1,0 +1,18 @@
+---
+apiVersion: bfiola.dev/v1
+kind: AccessClaim
+metadata:
+  name: service
+spec:
+  dns: service.example
+  passwordRef:
+    name: secret
+    key: password
+  serviceTemplates:
+    - selector:
+        app: nginx
+      type: LoadBalancer
+      ports:
+        - targetPort: 80
+          port: 81
+  ttl: 168h

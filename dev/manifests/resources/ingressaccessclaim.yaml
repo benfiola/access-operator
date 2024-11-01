@@ -1,0 +1,17 @@
+---
+apiVersion: bfiola.dev/v1
+kind: AccessClaim
+metadata:
+  name: ingress
+spec:
+  dns: ingress.example
+  ingressTemplate:
+    defaultBackend:
+      service:
+        name: nginx
+        port:
+          number: 80
+  passwordRef:
+    key: password
+    name: secret
+  ttl: 168h

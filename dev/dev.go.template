@@ -1,0 +1,73 @@
+package main
+
+import (
+	"context"
+	"log/slog"
+	"os"
+	"path/filepath"
+
+	operator "github.com/benfiola/access-operator/internal/operator"
+	"github.com/benfiola/access-operator/internal/server"
+	"golang.org/x/sync/errgroup"
+)
+
+func runOperator(ctx context.Context) error {
+	l := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	o, err := operator.New(&operator.Opts{
+		Kubeconfig:       filepath.Join("..", ".dev", "kube-config.yaml"),
+		Logger:           l,
+		RouterOsAddress:  "127.0.0.1:8728",
+		RouterOsUsername: "admin",
+	})
+	if err != nil {
+		return err
+	}
+
+	err = o.Run(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runServer(ctx context.Context) error {
+	l := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	s, err := server.New(&server.Opts{
+		BindAddress: "0.0.0.0:8080",
+		Kubeconfig:  filepath.Join("..", ".dev", "kube-config.yaml"),
+		Logger:      l,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = s.Run(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func inner() error {
+	ctx := context.Background()
+	g, _ := errgroup.WithContext(ctx)
+	g.Go(func() error { return runOperator(ctx) })
+	g.Go(func() error { return runServer(ctx) })
+	return g.Wait()
+}
+
+func main() {
+	err := inner()
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+}

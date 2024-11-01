@@ -1,0 +1,4 @@
+{{- if true -}}
+---
+{{- .Files.Get "generated/crds.yaml" -}}
+{{- end }}

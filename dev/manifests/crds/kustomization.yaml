@@ -1,0 +1,8 @@
+helmGlobals:
+  chartHome: ../../../charts
+
+namespace: default
+
+helmCharts:
+  - name: crds
+    releaseName: crds

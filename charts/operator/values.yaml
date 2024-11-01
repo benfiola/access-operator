@@ -1,0 +1,159 @@
+---
+# Default values for operator.
+image:
+  # -- Specify the repository to pull the image from
+  repository: docker.io/benfiola/access-operator
+  # -- Define the pull policy for workloads using this image
+  pullPolicy: IfNotPresent
+  # -- Define the image tag to use
+  # If unset, uses the chart's app version.
+  tag: ""
+
+# -- Specify (if necessary) secrets required to pull the image.  More info: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# -- Override the chart name
+nameOverride: ""
+# -- Override the fully qualified name of resources created by this chart
+fullnameOverride: ""
+
+# -- Define settings for the operator workload
+operator:
+  serviceAccount:
+    # -- Specifies whether a service account should be created
+    create: true
+    # -- Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # -- Annotations to add to the service account
+    annotations: {}
+    # -- The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  rbac:
+    # -- Specifies whether a ClusterRole and ClusterRoleBinding should be created
+    create: true
+    # -- The name of the ClusterRole and ClusterRoleBinding to create.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  # -- Sets annotations for operator pods created by this chart.
+  podAnnotations: {}
+  # -- Sets labels to set for operator pods created by this chart.
+  podLabels: {}
+
+  # -- Sets the operator pod's security context
+  podSecurityContext: {}
+
+  # -- Sets the operator deployment's security context
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+
+  # -- Sets the operator pod's resource requests and limits
+  resources: {}
+
+  # -- Define the operator pod's liveness probe
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8888
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # -- Define the operator pod's readiness probe
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8888
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # -- Specify which node operator workloads should be scheduled to
+  nodeSelector: {}
+
+  # -- Specify which node's taints operator workloads will tolerate
+  tolerations: []
+
+  # -- Specify which node's affinities operator workloads will prefer
+  affinity: {}
+
+# -- Define settings for the server workload
+server:
+  serviceAccount:
+    # -- Specifies whether a service account should be created
+    create: true
+    # -- Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # -- Annotations to add to the service account
+    annotations: {}
+    # -- The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  rbac:
+    # -- Specifies whether a ClusterRole and ClusterRoleBinding should be created
+    create: true
+    # -- The name of the ClusterRole and ClusterRoleBinding to create.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  # -- Sets annotations for server pods created by this chart.
+  podAnnotations: {}
+  # -- Sets labels to set for server pods created by this chart.
+  podLabels: {}
+
+  # -- Sets the server pod's security context
+  podSecurityContext: {}
+
+  # -- Sets the server deployment's security context
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+
+  # -- Sets the server pod's resource requests and limits
+  resources: {}
+
+  # -- Define the server pod's liveness probe
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8888
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # -- Define the server pod's readiness probe
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8888
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  # -- Specify which node server workloads should be scheduled to
+  nodeSelector: {}
+
+  # -- Specify which node's taints server workloads will tolerate
+  tolerations: []
+
+  # -- Specify which node's affinities server workloads will prefer
+  affinity: {}

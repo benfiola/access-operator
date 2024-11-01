@@ -1,0 +1,6 @@
+resources:
+  - ingressaccessclaim.yaml
+  - pod.yaml
+  - secret.yaml
+  - service.yaml
+  - serviceaccessclaim.yaml

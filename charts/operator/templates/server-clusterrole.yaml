@@ -1,0 +1,13 @@
+{{- if .Values.server.rbac.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "operator.server.clusterRoleName" . }}
+  labels:
+    {{- include "operator.server.labels" . | nindent 4 }}
+rules:
+{{- $rbac := .Files.Get "generated/server-rbac.yaml" | fromYaml -}}
+{{- get $rbac "rules" | toYaml | nindent 2 -}}
+
+{{- end }}

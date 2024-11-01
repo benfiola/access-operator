@@ -1,0 +1,3 @@
+# this file needs to exist so:
+# - golang can embed the 'embed' folder
+# - git tracks the 'embed' folder
