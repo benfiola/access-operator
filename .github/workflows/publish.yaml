@@ -2,11 +2,11 @@ name: publish
 on:
   push:
     branches:
-      - go
+      - main
+      - dev
 
 jobs:
   facts:
-    if: true
     runs-on: ubuntu-latest
     env:
       image_base: benfiola/access-operator
