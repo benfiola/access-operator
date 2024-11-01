@@ -84,6 +84,13 @@ Create the name of the operator ClusterRole to use
 {{- end }}
 
 {{/*
+Determine the name of the operator Secret to use
+*/}}
+{{- define "operator.operator.secretName" -}}
+{{- default (printf "%s-operator" (include "operator.fullname" .)) .Values.operator.externalSecret }}
+{{- end }}
+
+{{/*
 Create an server fullname
 */}}
 {{- define "operator.server.fullname" -}}

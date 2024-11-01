@@ -87,6 +87,9 @@ operator:
   # -- Specify which node's affinities operator workloads will prefer
   affinity: {}
 
+  # --- Specify an external secret ref whose environment variables will be mounted into the operator's container
+  externalSecret: ""
+
 # -- Define settings for the server workload
 server:
   serviceAccount:
@@ -131,7 +134,7 @@ server:
   livenessProbe:
     httpGet:
       path: /healthz
-      port: 8888
+      port: 8080
     initialDelaySeconds: 10
     periodSeconds: 10
     failureThreshold: 5
@@ -142,7 +145,7 @@ server:
   readinessProbe:
     httpGet:
       path: /healthz
-      port: 8888
+      port: 8080
     initialDelaySeconds: 10
     periodSeconds: 10
     failureThreshold: 5

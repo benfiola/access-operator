@@ -43,6 +43,9 @@ spec:
             {{- toYaml .Values.operator.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.operator.resources | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name:  {{ include "operator.operator.secretName" . }}
       {{- with .Values.operator.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
