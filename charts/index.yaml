@@ -1,0 +1,25 @@
+apiVersion: v1
+entries:
+  crds:
+  - apiVersion: v2
+    appVersion: 0.1.0-rc.1
+    created: "2024-11-01T22:34:29.034777165Z"
+    description: CRDs for the access-operator
+    digest: d70e3e080773021c13dd3004723f3904cc85aeb232f876efa0da2058ba492876
+    name: crds
+    type: application
+    urls:
+    - https://benfiola.github.io/access-operator/charts/crds-0.1.0-rc.1.tgz
+    version: 0.1.0-rc.1
+  operator:
+  - apiVersion: v2
+    appVersion: 0.1.0-rc.1
+    created: "2024-11-01T22:34:29.035315473Z"
+    description: Manages external access into benfiola's homelab
+    digest: 739dea5e1d0cebaed1c71ea795a625a5bbb876b0e874936cd39442d8c904044e
+    name: operator
+    type: application
+    urls:
+    - https://benfiola.github.io/access-operator/charts/operator-0.1.0-rc.1.tgz
+    version: 0.1.0-rc.1
+generated: "2024-11-01T22:34:29.034543968Z"
