@@ -2,8 +2,18 @@ apiVersion: v1
 entries:
   crds:
   - apiVersion: v2
+    appVersion: 0.1.0-rc.3
+    created: "2024-11-04T01:40:44.295618577Z"
+    description: CRDs for the access-operator
+    digest: cd3979af8fa6be0ce4543daf8b1e14e1c3d702843d647d0c0191bd74fef6814e
+    name: crds
+    type: application
+    urls:
+    - https://benfiola.github.io/access-operator/charts/crds-0.1.0-rc.3.tgz
+    version: 0.1.0-rc.3
+  - apiVersion: v2
     appVersion: 0.1.0-rc.2
-    created: "2024-11-01T22:57:38.934848548Z"
+    created: "2024-11-04T01:40:44.295499144Z"
     description: CRDs for the access-operator
     digest: 6608901f6a216cef2da91492a0c8d0933f1a0e229b7c8cb41befd3b917a8086c
     name: crds
@@ -13,7 +23,7 @@ entries:
     version: 0.1.0-rc.2
   - apiVersion: v2
     appVersion: 0.1.0-rc.1
-    created: "2024-11-01T22:57:38.934740145Z"
+    created: "2024-11-04T01:40:44.295389228Z"
     description: CRDs for the access-operator
     digest: d70e3e080773021c13dd3004723f3904cc85aeb232f876efa0da2058ba492876
     name: crds
@@ -23,8 +33,18 @@ entries:
     version: 0.1.0-rc.1
   operator:
   - apiVersion: v2
+    appVersion: 0.1.0-rc.3
+    created: "2024-11-04T01:40:44.296934361Z"
+    description: Manages external access into benfiola's homelab
+    digest: b0f41d6a08ff0025f92b383ef0da5c35aba44bc227f2668595a0a851b9d56aba
+    name: operator
+    type: application
+    urls:
+    - https://benfiola.github.io/access-operator/charts/operator-0.1.0-rc.3.tgz
+    version: 0.1.0-rc.3
+  - apiVersion: v2
     appVersion: 0.1.0-rc.2
-    created: "2024-11-01T22:57:38.935726436Z"
+    created: "2024-11-04T01:40:44.296504476Z"
     description: Manages external access into benfiola's homelab
     digest: e46085e4c085ca5ecbcd864be883044a4307f1f7cf1e5ab07b60317c767ae8a0
     name: operator
@@ -34,7 +54,7 @@ entries:
     version: 0.1.0-rc.2
   - apiVersion: v2
     appVersion: 0.1.0-rc.1
-    created: "2024-11-01T22:57:38.935293474Z"
+    created: "2024-11-04T01:40:44.296081184Z"
     description: Manages external access into benfiola's homelab
     digest: 739dea5e1d0cebaed1c71ea795a625a5bbb876b0e874936cd39442d8c904044e
     name: operator
@@ -42,4 +62,4 @@ entries:
     urls:
     - https://benfiola.github.io/access-operator/charts/operator-0.1.0-rc.1.tgz
     version: 0.1.0-rc.1
-generated: "2024-11-01T22:57:38.934513049Z"
+generated: "2024-11-04T01:40:44.295152905Z"
