@@ -18,7 +18,6 @@ import (
 
 	"github.com/go-logr/logr"
 	networkingv1 "k8s.io/api/networking/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -34,9 +33,10 @@ import (
 )
 
 const (
-	Finalizer   = "bfiola.dev/access-operator"
-	IndexLabel  = "bfiola.dev/service-index"
-	AccessLabel = "bfiola.dev/access"
+	Finalizer        = "bfiola.dev/access-operator"
+	IndexLabel       = "bfiola.dev/service-index"
+	AccessLabel      = "bfiola.dev/access"
+	AccessClaimLabel = "bfiola.dev/access-claim"
 )
 
 // Operator is the public interface for the operator implementation
@@ -178,8 +178,8 @@ type accessClaimReconciler struct {
 	syncInterval time.Duration
 }
 
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accessclaims,verbs=watch
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=watch
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accessclaims,verbs=get;list;update;watch
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=create;list;update;watch
 
 // Builds a controller with a [accessClaimReconciler].
 // Registers this controller with a [manager.Manager] instance.
@@ -193,9 +193,6 @@ func (r *accessClaimReconciler) register(m manager.Manager) error {
 	r.logger = ctrl.GetLogger()
 	return nil
 }
-
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accessclaims,verbs=get;update
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=get;create;update
 
 // Reconciles a [reconcile.Request] associated with a [v1.AccessClaim].
 // Returns a error if reconciliation fails.
@@ -234,24 +231,43 @@ func (r *accessClaimReconciler) Reconcile(ctx context.Context, req reconcile.Req
 		return success()
 	}
 
-	l.Info("get existing access")
-	a := &v1.Access{ObjectMeta: metav1.ObjectMeta{Namespace: ac.Namespace, Name: ac.Name}}
-	err = r.Client.Get(ctx, client.ObjectKeyFromObject(a), a)
-	c := apierrors.IsNotFound(err)
-	err = client.IgnoreNotFound(err)
+	l.Info("get existing accesses")
+	al := &v1.AccessList{}
+	err = r.Client.List(ctx, al, client.InNamespace(ac.Namespace), client.MatchingLabels{AccessClaimLabel: ac.Name})
 	if err != nil {
 		return failure(err)
 	}
-	if c {
-		l.Info("create access %s/%s", a.Namespace, a.Name)
+	var a *v1.Access
+	if len(al.Items) > 1 {
+		for _, a := range al.Items[1:] {
+			l.Info(fmt.Sprintf("delete access %s/%s", a.Namespace, a.Name))
+			err := r.Delete(ctx, &a)
+			if err != nil {
+				return failure(err)
+			}
+		}
+	}
+	if len(al.Items) >= 1 {
+		a = &al.Items[0]
+	}
+	if a == nil {
+		om := metav1.ObjectMeta{Namespace: ac.Namespace, Name: ac.Name, Labels: map[string]string{
+			AccessClaimLabel: ac.Name,
+		}}
+		l.Info("create access %s/%s", om.Namespace, om.Name)
+		a = &v1.Access{ObjectMeta: om, Spec: v1.AccessSpec{
+			Dns:              ac.Spec.Dns,
+			IngressTemplate:  ac.Spec.IngressTemplate,
+			Members:          []v1.Member{},
+			PasswordRef:      ac.Spec.PasswordRef,
+			ServiceTemplates: ac.Spec.ServiceTemplates,
+			Ttl:              ac.Spec.Ttl,
+		}}
 		controllerutil.SetOwnerReference(ac, a, r.Scheme())
-		a.Spec.Members = []v1.Member{}
-		a.Spec.Dns = ac.Spec.Dns
-		a.Spec.IngressTemplate = ac.Spec.IngressTemplate
-		a.Spec.PasswordRef = ac.Spec.PasswordRef
-		a.Spec.ServiceTemplates = ac.Spec.ServiceTemplates
-		a.Spec.Ttl = ac.Spec.Ttl
-		err = r.Create(ctx, a)
+		err := r.Client.Create(ctx, a)
+		if err != nil {
+			return failure(err)
+		}
 	} else if a.Spec.Dns != ac.Spec.Dns || !reflect.DeepEqual(a.Spec.IngressTemplate, ac.Spec.IngressTemplate) || !reflect.DeepEqual(a.Spec.PasswordRef, ac.Spec.PasswordRef) || !reflect.DeepEqual(a.Spec.ServiceTemplates, ac.Spec.ServiceTemplates) || a.Spec.Ttl != ac.Spec.Ttl {
 		l.Info("update access %s/%s", a.Namespace, a.Name)
 		a.Spec.Dns = ac.Spec.Dns
@@ -283,10 +299,10 @@ type accessReconciler struct {
 	syncInterval time.Duration
 }
 
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=watch
-// +kubebuilder:rbac:groups=core,resources=services,verbs=watch
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=watch
-// +kubebuilder:rbac:groups=cilium.io,resources=ciliumnetworkpolicies,verbs=watch
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=get;list;update;watch
+// +kubebuilder:rbac:groups=core,resources=services,verbs=create;list;patch;watch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=create;list;update;watch
+// +kubebuilder:rbac:groups=cilium.io,resources=ciliumnetworkpolicies,verbs=create;list;update;watch
 
 // Builds a controller with a [accessReconciler].
 // Registers this controller with a [manager.Manager] instance.
@@ -318,8 +334,6 @@ type AccessInfo struct {
 	FromCidrs []string
 	Rules     []accessRule
 }
-
-// +kubebuilder:rbac:groups=core,resources=pods,verbs=list
 
 // Helper method that returns a list of pods matching a [corev1.Service]'s pod selector
 func (ai *AccessInfo) getPods(c client.Client, s *corev1.Service) ([]*corev1.Pod, error) {
@@ -374,8 +388,6 @@ func (ai *AccessInfo) AddService(c client.Client, s *corev1.Service) error {
 
 	return nil
 }
-
-// +kubebuilder:rbac:groups=core,resources=services,verbs=get
 
 // Collects information about a provided [networkingv1.Ingress] and adds this information to the [AccessInfo]
 // Returns an error if attempts to collect information fail
@@ -460,11 +472,6 @@ func (ai *AccessInfo) AddIngress(c client.Client, i *networkingv1.Ingress) error
 
 	return nil
 }
-
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=get;update
-// +kubebuilder:rbac:groups=cilium.io,resources=ciliumnetworkpolicies,verbs=create;list;update
-// +kubebuilder:rbac:groups=core,resources=services,verbs=create;list;patch
-// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=create;list;update
 
 // Reconciles a [reconcile.Request] associated with a [v1.Access].
 // Returns a error if reconciliation fails.
