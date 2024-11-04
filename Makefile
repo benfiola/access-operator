@@ -195,7 +195,7 @@ $(CILIUM_MANIFEST): $(KUBECTL) | $(ASSETS)
 	# generate cilium manifest
 	$(KUSTOMIZE_CMD) $(CILIUM_MANIFEST_SRC) > $(CILIUM_MANIFEST)
 
-$(CRDS_MANIFEST): $(KUBECTL) $(HELM) | $(ASSETS)
+$(CRDS_MANIFEST): generate $(KUBECTL) $(HELM) | $(ASSETS)
 	# generate crds manifest
 	$(KUSTOMIZE_CMD) $(CRDS_MANIFEST_SRC) > $(CRDS_MANIFEST)
 

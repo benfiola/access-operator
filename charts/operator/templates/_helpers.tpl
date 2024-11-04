@@ -36,9 +36,16 @@ Common labels
 {{- define "operator.labels" -}}
 helm.sh/chart: {{ include "operator.chart" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "-" | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Calculate the image tag to use
+*/}}
+{{- define "operator.imageTag" -}}
+{{ .Values.image.tag | default (.Chart.AppVersion | replace "+" "-") }}
 {{- end }}
 
 {{/*
