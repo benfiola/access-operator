@@ -788,6 +788,7 @@ func TestAccess(t *testing.T) {
 		td.Require.Equal(f["action"], "accept")
 		td.Require.Equal(f["chain"], "input")
 		td.Require.Equal(f["src-address-list"], fmt.Sprintf("access-operator/%s/%s", a.Namespace, a.Name))
+		td.Require.Equal(f["disabled"], "true")
 	})
 
 	t.Run("creates service routeros nat rule", func(t *testing.T) {
@@ -821,6 +822,7 @@ func TestAccess(t *testing.T) {
 		td.Require.Equal(n["dst-port"], strconv.Itoa(int(p)))
 		td.Require.Equal(n["to-addresses"], ip)
 		td.Require.Equal(n["to-ports"], strconv.Itoa(int(p)))
+		td.Require.Equal(n["disabled"], "true")
 	})
 
 	t.Run("creates ingress routeros nat rule", func(t *testing.T) {
@@ -857,6 +859,7 @@ func TestAccess(t *testing.T) {
 		td.Require.Equal(n["dst-port"], strconv.Itoa(int(p)))
 		td.Require.Equal(n["to-addresses"], ip)
 		td.Require.Equal(n["to-ports"], strconv.Itoa(int(p)))
+		td.Require.Equal(n["disabled"], "true")
 	})
 
 	t.Run("creates routeros address list", func(t *testing.T) {

@@ -178,7 +178,8 @@ type accessClaimReconciler struct {
 	syncInterval time.Duration
 }
 
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accessclaims,verbs=get;list;update;watch
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accessclaims,verbs=watch
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=watch
 
 // Builds a controller with a [accessClaimReconciler].
 // Registers this controller with a [manager.Manager] instance.
@@ -193,6 +194,7 @@ func (r *accessClaimReconciler) register(m manager.Manager) error {
 	return nil
 }
 
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accessclaims,verbs=get;update
 // +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=get;create;update
 
 // Reconciles a [reconcile.Request] associated with a [v1.AccessClaim].
@@ -281,7 +283,10 @@ type accessReconciler struct {
 	syncInterval time.Duration
 }
 
-// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=get;list;update;watch
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=watch
+// +kubebuilder:rbac:groups=core,resources=services,verbs=watch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=watch
+// +kubebuilder:rbac:groups=cilium.io,resources=ciliumnetworkpolicies,verbs=watch
 
 // Builds a controller with a [accessReconciler].
 // Registers this controller with a [manager.Manager] instance.
@@ -456,9 +461,10 @@ func (ai *AccessInfo) AddIngress(c client.Client, i *networkingv1.Ingress) error
 	return nil
 }
 
+// +kubebuilder:rbac:groups=bfiola.dev,resources=accesses,verbs=get;update
+// +kubebuilder:rbac:groups=cilium.io,resources=ciliumnetworkpolicies,verbs=create;list;update
 // +kubebuilder:rbac:groups=core,resources=services,verbs=create;list;patch
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=create;list;update
-// +kubebuilder:rbac:groups=cilium.io,resources=ciliumnetworkpolicies,verbs=create;list;update
 
 // Reconciles a [reconcile.Request] associated with a [v1.Access].
 // Returns a error if reconciliation fails.
