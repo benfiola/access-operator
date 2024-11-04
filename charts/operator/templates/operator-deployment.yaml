@@ -37,15 +37,35 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - operator
+            {{- if .Values.operator.cloudflareToken }}
+            - --cloudflare-token={{ .Values.operator.cloudflareToken }}
+            {{- end }}
+            {{- if .Values.operator.healthBindAddress }}
+            - --health-bind-address={{ .Values.operator.healthBindAddress }}
+            {{- end }}
+            {{- if .Values.operator.logLevel }}
+            - --log-level={{ .Values.operator.logLevel }}
+            {{- end }}
+            {{- if .Values.operator.routerOsAddress }}
+            - --routeros-address={{ .Values.operator.routerOsAddress }}
+            {{- end }}
+            {{- if .Values.operator.routerOsPassword }}
+            - --routeros-password={{ .Values.operator.routerOsPassword }}
+            {{- end }}
+            {{- if .Values.operator.routerOsUsername }}
+            - --routeros-username={{ .Values.operator.routerOsUsername }}
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.operator.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.operator.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.operator.resources | nindent 12 }}
+          {{- if .Values.operator.externalSecret }}
           envFrom:
             - secretRef:
-                name:  {{ include "operator.operator.secretName" . }}
+                name:  {{ .Values.operator.externalSecret }}
+          {{- end }}
       {{- with .Values.operator.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -37,12 +37,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - server
+            {{- if .Values.server.logLevel }}
+            - --log-level={{ .Values.server.logLevel }}
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.server.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.server.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
+          {{- if .Values.server.externalSecret }}
+          envFrom:
+            - secretRef:
+                name:  {{ .Values.server.externalSecret }}
+          {{- end }}
       {{- with .Values.server.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

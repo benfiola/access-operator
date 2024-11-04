@@ -90,6 +90,24 @@ operator:
   # --- Specify an external secret ref whose environment variables will be mounted into the operator's container
   externalSecret: ""
 
+  # --- Specify the cloudflare token to use with the operator
+  cloudflareToken: ""
+
+  # --- Specify the logging verbosity
+  logLevel: ""
+
+  # --- Specify the address to bind the health endpoints to
+  healthBindAddress: ""
+
+  # --- Specify the routeros device address to connect to
+  routerOsAddress: ""
+
+  # --- Specify the password to the routeros device address to connect to
+  routerOsPassword: ""
+
+  # --- Specify the username to the routeros device address to connect to
+  routerOsUsername: ""
+
 # -- Define settings for the server workload
 server:
   serviceAccount:
@@ -160,3 +178,9 @@ server:
 
   # -- Specify which node's affinities server workloads will prefer
   affinity: {}
+
+  # --- Specify an external secret ref whose environment variables will be mounted into the server's container
+  externalSecret: ""
+
+  # --- Specify the logging verbosity
+  logLevel: ""
