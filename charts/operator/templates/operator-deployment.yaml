@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "operator.operator.fullname" . }}
+  name: {{ include "operator.operator.name" . }}
   labels:
     {{- include "operator.operator.labels" . | nindent 4 }}
 spec:
@@ -12,29 +12,21 @@ spec:
       {{- include "operator.operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.operator.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- include "operator.operator.labels" . | nindent 8 }}
-        {{- with .Values.operator.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "operator.operator.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.operator.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "operator.operator.name" . }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.operator.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ include "operator.imageTag" . }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          image: "{{ include "operator.image" . }}"
+          imagePullPolicy: IfNotPresent
           args:
             - operator
             {{- if .Values.operator.cloudflareToken }}
@@ -56,9 +48,23 @@ spec:
             - --routeros-username={{ .Values.operator.routerOsUsername }}
             {{- end }}
           livenessProbe:
-            {{- toYaml .Values.operator.livenessProbe | nindent 12 }}
+            httpGet:
+              path: /healthz
+              port: 8888
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 5
+            successThreshold: 1
+            timeoutSeconds: 5
           readinessProbe:
-            {{- toYaml .Values.operator.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /healthz
+              port: 8888
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 5
+            successThreshold: 1
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.operator.resources | nindent 12 }}
           {{- if .Values.operator.externalSecret }}
@@ -66,15 +72,3 @@ spec:
             - secretRef:
                 name:  {{ .Values.operator.externalSecret }}
           {{- end }}
-      {{- with .Values.operator.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.operator.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.operator.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}

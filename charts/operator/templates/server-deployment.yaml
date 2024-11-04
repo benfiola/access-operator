@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "operator.server.fullname" . }}
+  name: {{ include "operator.server.name" . }}
   labels:
     {{- include "operator.server.labels" . | nindent 4 }}
 spec:
@@ -12,38 +12,47 @@ spec:
       {{- include "operator.server.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.server.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- include "operator.server.labels" . | nindent 8 }}
-        {{- with .Values.server.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "operator.server.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.server.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "operator.server.name" . }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.server.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ include "operator.imageTag" . }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+          image: "{{ include "operator.image" . }}"
+          imagePullPolicy: IfNotPresent
           args:
             - server
             {{- if .Values.server.logLevel }}
             - --log-level={{ .Values.server.logLevel }}
             {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
           livenessProbe:
-            {{- toYaml .Values.server.livenessProbe | nindent 12 }}
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 5
+            successThreshold: 1
+            timeoutSeconds: 5
           readinessProbe:
-            {{- toYaml .Values.server.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 5
+            successThreshold: 1
+            timeoutSeconds: 5
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
           {{- if .Values.server.externalSecret }}
@@ -51,15 +60,3 @@ spec:
             - secretRef:
                 name:  {{ .Values.server.externalSecret }}
           {{- end }}
-      {{- with .Values.server.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.server.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.server.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}

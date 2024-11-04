@@ -1,4 +1,2 @@
-{{- if true -}}
 ---
-{{- .Files.Get "generated/crds.yaml" -}}
-{{- end }}
+{ { - .Files.Get "generated/crds.yaml" - } }
