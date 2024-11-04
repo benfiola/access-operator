@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	v1 "github.com/benfiola/access-operator/pkg/api/bfiola.dev/v1"
@@ -518,21 +519,25 @@ func (r *accessReconciler) Reconcile(ctx context.Context, req reconcile.Request)
 
 	n := time.Now()
 	ms := []v1.Member{}
-	ems := []v1.Member{}
+	ims := []v1.Member{}
 	for _, m := range a.Spec.Members {
+		if strings.HasPrefix(m.Cidr, "192.168.") {
+			ims = append(ims, m)
+			continue
+		}
 		e, err := time.Parse(time.RFC3339, m.Expires)
 		if err != nil {
 			return failure(err)
 		}
 		if e.Compare(n) < 0 {
-			ems = append(ems, m)
+			ims = append(ims, m)
 		} else {
 			ms = append(ms, m)
 		}
 	}
-	if len(ems) != 0 {
-		for _, m := range ems {
-			l.Info("remove expired member: %s", m.Cidr)
+	if len(ims) != 0 {
+		for _, m := range ims {
+			l.Info("remove invalid member: %s", m.Cidr)
 		}
 		a.Spec.Members = ms
 		err := r.Update(ctx, a)
