@@ -60,7 +60,7 @@ jobs:
         run: |
           echo "${{steps.facts.outputs.version}}" > internal/embed/version.txt
           make generate
-          rm -rf ./frontend/node_modules
+          rm -rf .dev frontend/node_modules
           git diff --exit-code
       - name: upload source artifact
         uses: actions/upload-artifact@v4
@@ -88,9 +88,6 @@ jobs:
           merge-multiple: true
       - name: build image tar
         run: |
-          make generate
-          git diff --exit-code
-          echo "${{needs.prepare.outputs.version}}" > internal/embed/version.txt
           docker buildx create --platform=linux/arm64,linux/amd64 --use
           docker buildx build --platform=linux/arm64,linux/amd64 --progress=plain --output type=oci,dest=docker.tar .
       - name: upload artifact
