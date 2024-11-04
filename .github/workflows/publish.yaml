@@ -150,7 +150,7 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          cd d: error
+          if-no-files-found: error
           name: helm-docs-${{matrix.chart}}
           path: README-${{matrix.chart}}.md
 
