@@ -190,7 +190,7 @@ func NewServer(o *ServerOpts) (*server, error) {
 
 	ba := o.BindAddress
 	if ba == "" {
-		ba = "127.0.0.1:8080"
+		ba = ":8080"
 	}
 
 	e := echo.New()
