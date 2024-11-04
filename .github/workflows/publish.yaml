@@ -60,6 +60,7 @@ jobs:
         run: |
           echo "${{steps.facts.outputs.version}}" > internal/embed/version.txt
           make generate
+          rm -rf ./frontend/node_modules
           git diff --exit-code
       - name: upload source artifact
         uses: actions/upload-artifact@v4
