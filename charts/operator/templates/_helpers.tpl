@@ -11,13 +11,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{- define "operator.image" -}}
-{{ $tag := .Chart.AppVersion | replace "+" "-" }}
-{{ $repo := "docker.io/benfiola/access-operator" }}
-{{ printf "%s:%s" $repo $tag }}
+{{- $tag := .Chart.AppVersion | replace "+" "-" }}
+{{- $repo := "docker.io/benfiola/access-operator" }}
+{{- printf "%s:%s" $repo $tag }}
 {{- end }}
 
 {{- define "operator.operator.name" -}}
-{{ printf "%s-operator" (include "operator.name" .)}}
+{{- printf "%s-operator" (include "operator.name" .)}}
 {{- end }}
 
 {{- define "operator.operator.labels" -}}
@@ -32,7 +32,7 @@ bfiola.dev/component: operator
 {{- end }}
 
 {{- define "operator.server.name" -}}
-{{ printf "%s-server" (include "operator.name" .)}}
+{{- printf "%s-server" (include "operator.name" .)}}
 {{- end }}
 
 {{- define "operator.server.labels" -}}
