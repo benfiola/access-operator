@@ -1,2 +1,2 @@
 ---
-{ { - .Files.Get "generated/crds.yaml" - } }
+{{- .Files.Get "generated/crds.yaml" -}}
