@@ -176,7 +176,7 @@ func (ds *dnsSync) tick() error {
 				continue
 			}
 			delete(adds, cfdns.Name)
-			if cfdns.Content != ip || (cfdns.Proxied == nil || !*cfdns.Proxied) || cfdns.TTL != 60 || cfdns.Type != "A" {
+			if cfdns.Content != ip || (cfdns.Proxied == nil || *cfdns.Proxied) || cfdns.TTL != 60 || cfdns.Type != "A" {
 				updates[cfdns.Name] = cfdns.ID
 			}
 		}
