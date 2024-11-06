@@ -719,6 +719,12 @@ func (r *accessReconciler) Reconcile(ctx context.Context, req reconcile.Request)
 		cnpcs = append(cnpcs, api.CIDR(c))
 	}
 	for _, r := range ai.Rules {
+		s := map[string]string{}
+		for k, v := range r.Selector {
+			nk := fmt.Sprintf("k8s.%s", k)
+			s[nk] = v
+		}
+		es := api.NewESFromMatchRequirements(s, nil)
 		var cnpr api.Rule
 		if r.Ingress {
 			cnpr = api.Rule{
@@ -735,9 +741,7 @@ func (r *accessReconciler) Reconcile(ctx context.Context, req reconcile.Request)
 					}}}},
 				}},
 				Egress: []api.EgressRule{{
-					EgressCommonRule: api.EgressCommonRule{ToEndpoints: []api.EndpointSelector{
-						api.NewESFromMatchRequirements(r.Selector, nil),
-					}},
+					EgressCommonRule: api.EgressCommonRule{ToEndpoints: []api.EndpointSelector{es}},
 					ToPorts: api.PortRules{{Ports: []api.PortProtocol{{
 						Port:     r.ToPort,
 						Protocol: api.L4Proto(r.Protocol),
@@ -746,7 +750,7 @@ func (r *accessReconciler) Reconcile(ctx context.Context, req reconcile.Request)
 			}
 		} else {
 			cnpr = api.Rule{
-				EndpointSelector: api.NewESFromMatchRequirements(r.Selector, nil),
+				EndpointSelector: es,
 				Ingress: []api.IngressRule{{
 					IngressCommonRule: api.IngressCommonRule{
 						FromCIDR: cnpcs,

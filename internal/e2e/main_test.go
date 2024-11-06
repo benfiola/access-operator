@@ -607,7 +607,7 @@ func TestAccess(t *testing.T) {
 	deriveCiliumNetworkPolicySelector := func(s map[string]string) map[string]string {
 		r := map[string]string{}
 		for k, v := range s {
-			r[fmt.Sprintf("any.%s", k)] = v
+			r[fmt.Sprintf("k8s.%s", k)] = v
 		}
 		return r
 	}
