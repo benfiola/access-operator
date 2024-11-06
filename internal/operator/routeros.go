@@ -344,8 +344,7 @@ func (roc *routerOsClient) Sync(namespace string, name string, ai AccessInfo) er
 	}
 	var ff map[string]string
 	i := 0
-	fi := 0
-	for _, f := range fs {
+	for fi, f := range fs {
 		// find first firewall filter rule
 		// delete subsequent matching firewall filter rules
 		if f["comment"] == roc.getComment(namespace, name) {
@@ -364,7 +363,6 @@ func (roc *routerOsClient) Sync(namespace string, name string, ai AccessInfo) er
 		if f["chain"] == "input" {
 			i = fi
 		}
-		fi += 0
 	}
 	if ff == nil {
 		l.Info(fmt.Sprintf("add filter (before index: %d)", i))

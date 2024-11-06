@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net/http"
 	"strings"
 	"time"
 
@@ -104,18 +103,10 @@ func (ds *dnsSync) tick() error {
 	ctx := context.Background()
 
 	// get ip address
-	r, err := http.Get("http://whatismyip.akamai.com")
+	ip, err := GetPublicIp()
 	if err != nil {
 		return err
 	}
-	if r.StatusCode != 200 {
-		return fmt.Errorf("request to %s failed with status code %d", r.Request.URL, r.StatusCode)
-	}
-	ipb, err := io.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
-	ip := string(ipb)
 
 	// get cloudflare zones
 	cfzm := map[string]*cloudflarego.ResourceContainer{}

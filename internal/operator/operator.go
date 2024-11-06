@@ -520,8 +520,12 @@ func (r *accessReconciler) Reconcile(ctx context.Context, req reconcile.Request)
 	n := time.Now()
 	ms := []v1.Member{}
 	ims := []v1.Member{}
+	pip, err := GetPublicIp()
+	if err != nil {
+		return failure(err)
+	}
 	for _, m := range a.Spec.Members {
-		if strings.HasPrefix(m.Cidr, "192.168.") {
+		if strings.HasPrefix(m.Cidr, "192.168.") || strings.HasPrefix(m.Cidr, pip) {
 			ims = append(ims, m)
 			continue
 		}
