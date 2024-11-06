@@ -370,7 +370,6 @@ func (roc *routerOsClient) Sync(namespace string, name string, ai AccessInfo) er
 			"action":           "accept",
 			"chain":            "input",
 			"comment":          roc.getComment(namespace, name),
-			"disabled":         "yes",
 			"src-address-list": aln,
 		}
 		if len(fs) != 0 {
@@ -416,7 +415,6 @@ func (roc *routerOsClient) Sync(namespace string, name string, ai AccessInfo) er
 			"action":           "dst-nat",
 			"chain":            "dstnat",
 			"comment":          roc.getComment(namespace, name),
-			"disabled":         "yes",
 			"protocol":         k.Protocol,
 			"src-address-list": aln,
 			"dst-port":         k.FromPort,
