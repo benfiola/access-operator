@@ -131,10 +131,8 @@ func NewOperator(o *OperatorOpts) (*operator, error) {
 	})
 
 	rs := []reconciler{
-		&accessClaimReconciler{},
-		&accessReconciler{
-			routerOs: roc,
-		},
+		&accessClaimReconciler{syncInterval: si},
+		&accessReconciler{routerOs: roc, syncInterval: si},
 	}
 	for _, r := range rs {
 		err = r.register(m)
