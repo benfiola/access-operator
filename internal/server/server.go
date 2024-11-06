@@ -161,13 +161,25 @@ func (s *server) authorizeApp(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, c.Request().Header)
+	return c.NoContent(http.StatusOK)
 }
 
+type OperatorInfo struct {
+	Version string `json:"version"`
+}
+
+// Gets information about the operator - returning a [OperatorInfo] object
+func (s *server) getOperatorInfo(c echo.Context) error {
+	oi := OperatorInfo{Version: internal.GetVersion()}
+	return c.JSON(http.StatusOK, oi)
+}
+
+// An [echo.IPExtractor] that returns a fake IP address (used for local development where Cloudflare headers might not be set)
 func extractDevIp(r *http.Request) string {
 	return "254.254.254.254"
 }
 
+// An [echo.IPExtractor] that extracts an IP address from a specific header set by cloudflare
 func extractCloudflareIp(r *http.Request) string {
 	return r.Header.Get("CF-Connecting-IP")
 }
@@ -249,6 +261,7 @@ func NewServer(o *ServerOpts) (*server, error) {
 	e.GET("/healthz", s.health)
 	e.GET("/api/apps/list", s.listApps)
 	e.POST("/api/apps/:namespace/:name/authorize", s.authorizeApp)
+	e.GET("/api/operator/info", s.getOperatorInfo)
 	return &s, nil
 }
 

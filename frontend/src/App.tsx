@@ -21,6 +21,13 @@ interface AppInfo {
 }
 
 /**
+ * OperatorInfo represents operator metadata
+ */
+interface OperatorInfo {
+  version: string;
+}
+
+/**
  * StatusInfo represents a status information displayed to a user - often a status of a remote request.
  */
 interface StatusInfo {
@@ -122,8 +129,28 @@ const authorizeApp = async (app: AppInfo, password: string) => {
   }).then(raiseOnError);
 };
 
+/**
+ * Gets operator info from the backend
+ *
+ * See: /api/operator/info
+ *
+ * @returns an OperatorInfo instance
+ */
+const getOperatorInfo = async () => {
+  return await fetch(`/api/operator/info`, {
+    method: "get",
+    headers: { "content-type": "application/json" },
+  })
+    .then(raiseOnError)
+    .then((value) => value.json())
+    .then((data: OperatorInfo) => data);
+};
+
 function App() {
   // assemble state
+  const [operatorInfo, setOperatorInfo] = useState<OperatorInfo>({
+    version: "0.0.0+unknown",
+  });
   const [apps, setApps] = useState<AppInfo[]>([]);
   const [app, setApp] = useState<AppInfo | null>(null);
   const [password, setPassword] = useState<string>("");
@@ -133,6 +160,7 @@ function App() {
   // perform initial app fetch
   useEffect(() => {
     listApps().then(setApps);
+    getOperatorInfo().then(setOperatorInfo);
   }, []);
 
   //derive data
@@ -177,7 +205,10 @@ function App() {
     <Card className="max-w-[600px]" isDisabled={isLoading}>
       <CardHeader className="flex gap-3">
         <div className="flex flex-col">
-          <p className="text-md">Authorization</p>
+          <p className="text-md">
+            Authorization
+            <span className="font-thin"> ({operatorInfo.version}) </span>
+          </p>
         </div>
       </CardHeader>
       <Divider />
