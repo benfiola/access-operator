@@ -191,8 +191,7 @@ type userInfo struct {
 func (s *server) getUserInfo(c echo.Context) error {
 	ctx := context.Background()
 
-	ip := "98.41.17.90"
-	// ip := c.RealIP()
+	ip := c.RealIP()
 	if ip == "" {
 		return c.String(http.StatusBadRequest, "could not determine ip")
 	}
