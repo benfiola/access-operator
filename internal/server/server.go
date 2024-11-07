@@ -202,7 +202,7 @@ func (s *server) getUserInfo(c echo.Context) error {
 		return err
 	}
 
-	ui := userInfo{Ip: ip}
+	ui := userInfo{Apps: []userAppInfo{}, Ip: ip}
 	for _, a := range al.Items {
 		if a.Status.CurrentSpec == nil {
 			continue
