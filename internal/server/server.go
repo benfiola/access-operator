@@ -164,14 +164,62 @@ func (s *server) authorizeApp(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-type OperatorInfo struct {
+// operatorInfo holds information about the operator
+type operatorInfo struct {
 	Version string `json:"version"`
 }
 
-// Gets information about the operator - returning a [OperatorInfo] object
+// Gets information about the operator - returning a [operatorInfo] object
 func (s *server) getOperatorInfo(c echo.Context) error {
-	oi := OperatorInfo{Version: internal.GetVersion()}
+	oi := operatorInfo{Version: internal.GetVersion()}
 	return c.JSON(http.StatusOK, oi)
+}
+
+// userAppInfo is information about a user's authorization status with an app
+type userAppInfo struct {
+	Dns     string `json:"dns"`
+	Expires string `json:"expires"`
+}
+
+// userInfo is information about a user - including the collection of appps they're authorized to use
+type userInfo struct {
+	Apps []userAppInfo `json:"apps"`
+	Ip   string        `json:"ip"`
+}
+
+// Gets information about the current user - returning a [userInfo] object
+func (s *server) getUserInfo(c echo.Context) error {
+	ctx := context.Background()
+
+	ip := "98.41.17.90"
+	// ip := c.RealIP()
+	if ip == "" {
+		return c.String(http.StatusBadRequest, "could not determine ip")
+	}
+
+	al := &v1.AccessList{}
+	err := s.kube.List(ctx, al)
+	if err != nil {
+		return err
+	}
+
+	ui := userInfo{Ip: ip}
+	for _, a := range al.Items {
+		if a.Status.CurrentSpec == nil {
+			continue
+		}
+		for _, m := range a.Status.CurrentSpec.Members {
+			if !strings.HasPrefix(m.Cidr, ip) {
+				continue
+			}
+			ui.Apps = append(ui.Apps, userAppInfo{
+				Dns:     a.Status.CurrentSpec.Dns,
+				Expires: m.Expires,
+			})
+		}
+	}
+
+	return c.JSON(http.StatusOK, ui)
 }
 
 // An [echo.IPExtractor] that returns a fake IP address (used for local development where Cloudflare headers might not be set)
@@ -261,7 +309,8 @@ func NewServer(o *ServerOpts) (*server, error) {
 	e.GET("/healthz", s.health)
 	e.GET("/api/apps/list", s.listApps)
 	e.POST("/api/apps/:namespace/:name/authorize", s.authorizeApp)
-	e.GET("/api/operator/info", s.getOperatorInfo)
+	e.GET("/api/operator", s.getOperatorInfo)
+	e.GET("/api/user", s.getUserInfo)
 	return &s, nil
 }
 

@@ -8,13 +8,19 @@ import {
   Input,
   Select,
   SelectItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react";
 import React, { useEffect, useState } from "react";
 
 /**
- * AppInfo represents a bfiola.dev/v1/Access resource as an application.
+ * ListAppItem represents a bfiola.dev/v1/Access resource as an application.
  */
-interface AppInfo {
+interface ListAppItem {
   namespace: string;
   name: string;
   dns: string;
@@ -25,6 +31,22 @@ interface AppInfo {
  */
 interface OperatorInfo {
   version: string;
+}
+
+/**
+ * UserAppItem holds app-specific authorization information for a user
+ */
+interface UserAppItem {
+  dns: string;
+  expires: string;
+}
+
+/**
+ * UserInfo holds authorization information for a user
+ */
+interface UserInfo {
+  apps: UserAppItem[];
+  ip: string;
 }
 
 /**
@@ -103,13 +125,13 @@ const raiseOnError = (r: Response) => {
  * Makes an API call to the backend to list known applications.
  *
  * See: /api/apps/list
- * @returns a list of AppInfo objects
+ * @returns a list of ListAppItem objects
  */
 const listApps = async () => {
   return fetch("/api/apps/list")
     .then(raiseOnError)
     .then((value) => value.json())
-    .then((data: AppInfo[]) => data);
+    .then((data: ListAppItem[]) => data);
 };
 
 /**
@@ -121,7 +143,7 @@ const listApps = async () => {
  * @param password The password to authorize with
  * @returns the successful backend response
  */
-const authorizeApp = async (app: AppInfo, password: string) => {
+const authorizeApp = async (app: ListAppItem, password: string) => {
   return await fetch(`/api/apps/${app.namespace}/${app.name}/authorize`, {
     method: "post",
     body: JSON.stringify({ password: password }),
@@ -137,7 +159,7 @@ const authorizeApp = async (app: AppInfo, password: string) => {
  * @returns an OperatorInfo instance
  */
 const getOperatorInfo = async () => {
-  return await fetch(`/api/operator/info`, {
+  return await fetch(`/api/operator`, {
     method: "get",
     headers: { "content-type": "application/json" },
   })
@@ -146,13 +168,34 @@ const getOperatorInfo = async () => {
     .then((data: OperatorInfo) => data);
 };
 
+/**
+ * Gets user info from the backend
+ *
+ * See: /api/operator
+ *
+ * @returns an UserInfo instance
+ */
+const getUserInfo = async () => {
+  return await fetch(`/api/user`, {
+    method: "get",
+    headers: { "content-type": "application/json" },
+  })
+    .then(raiseOnError)
+    .then((value) => value.json())
+    .then((data: UserInfo) => data);
+};
+
 function App() {
   // assemble state
   const [operatorInfo, setOperatorInfo] = useState<OperatorInfo>({
     version: "0.0.0+unknown",
   });
-  const [apps, setApps] = useState<AppInfo[]>([]);
-  const [app, setApp] = useState<AppInfo | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    apps: [],
+    ip: "0.0.0.0",
+  });
+  const [apps, setApps] = useState<ListAppItem[]>([]);
+  const [app, setApp] = useState<ListAppItem | null>(null);
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<StatusInfo | null>(null);
@@ -161,14 +204,18 @@ function App() {
   useEffect(() => {
     listApps().then(setApps);
     getOperatorInfo().then(setOperatorInfo);
+    getUserInfo().then(setUserInfo);
   }, []);
 
   //derive data
-  const sorted = apps.sort((a, b) => a.dns.localeCompare(b.dns));
+  const sortedApps = apps.sort((a, b) => a.dns.localeCompare(b.dns));
+  const sortedUserApps = userInfo.apps.sort((a, b) =>
+    a.dns.localeCompare(b.dns)
+  );
 
   // handlers
   const onAppSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setApp(sorted[parseInt(event.target.value)]);
+    setApp(sortedApps[parseInt(event.target.value)]);
   };
   const onPasswordInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
@@ -202,41 +249,62 @@ function App() {
   };
 
   return (
-    <Card className="max-w-[600px]" isDisabled={isLoading}>
-      <CardHeader className="flex gap-3">
-        <div className="flex flex-col">
-          <p className="text-md">
-            Authorization
-            <span className="font-thin"> ({operatorInfo.version}) </span>
-          </p>
-        </div>
-      </CardHeader>
-      <Divider />
-      <CardBody>
-        <Select
-          description="Application"
-          label="Select an application"
-          onChange={onAppSelect}
-        >
-          {sorted.map((a, i) => (
-            <SelectItem key={i}>{a.dns}</SelectItem>
-          ))}
-        </Select>
-        <Input description="Password" onInput={onPasswordInput}></Input>
-        <Status status={status} />
-      </CardBody>
-      <Divider />
-      <CardFooter className="flex gap-3 justify-center">
-        <Button
-          className="w-[300px] bg-success-500"
-          onClick={onSubmit}
-          isDisabled={isLoading || app === null || password === ""}
-          isLoading={isLoading}
-        >
-          Submit
-        </Button>
-      </CardFooter>
-    </Card>
+    <>
+      <div className="p-6 max-w-[600px]">
+        <Card className="" isDisabled={isLoading}>
+          <CardHeader className="flex gap-3">
+            <div className="flex flex-col">
+              <p className="text-md">
+                Authorization
+                <span className="font-thin"> ({operatorInfo.version}) </span>
+              </p>
+            </div>
+          </CardHeader>
+          <Divider />
+          <CardBody>
+            <Input isDisabled={true} description="IP" value={userInfo.ip} />
+            <Select
+              description="Application"
+              label="Select an application"
+              onChange={onAppSelect}
+            >
+              {sortedApps.map((a, i) => (
+                <SelectItem key={i}>{a.dns}</SelectItem>
+              ))}
+            </Select>
+            <Input description="Password" onInput={onPasswordInput} />
+            <Status status={status} />
+          </CardBody>
+          <Divider />
+          <CardFooter className="flex gap-3 justify-center">
+            <Button
+              className="w-[300px] bg-success-500"
+              onClick={onSubmit}
+              isDisabled={isLoading || app === null || password === ""}
+              isLoading={isLoading}
+            >
+              Submit
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="p-6 max-w-[600px]">
+        <Table aria-label="list of user apps">
+          <TableHeader>
+            <TableColumn>APP</TableColumn>
+            <TableColumn>EXPIRY</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {sortedUserApps.map((a, i) => (
+              <TableRow key={i}>
+                <TableCell>{a.dns}</TableCell>
+                <TableCell>{new Date(a.expires).toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
 
