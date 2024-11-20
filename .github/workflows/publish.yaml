@@ -182,7 +182,7 @@ jobs:
       - name: publish latest docker image latest
         if: "${{needs.prepare.outputs.is_main == '1'}}"
         run: |
-          crane push /tmp/archive "${{needs.prepare.outputs.docker_image_latest}}
+          crane push /tmp/archive "${{needs.prepare.outputs.docker_image_latest}}"
       - name: cleanup
         run: |
           rm -rf /tmp/archive
