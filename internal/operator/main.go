@@ -69,10 +69,10 @@ func New(o *Opts) (*Main, error) {
 // Runs the application.
 // Blocks until one of the components fail with an error
 func (m *Main) Run(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
-	g.Go(func() error { return m.Operator.Run(ctx) })
+	g, sctx := errgroup.WithContext(ctx)
+	g.Go(func() error { return m.Operator.Run(sctx) })
 	if ptr, ok := m.DNSSync.(*dnsSync); ok && ptr != nil {
-		g.Go(func() error { return m.DNSSync.Run(ctx) })
+		g.Go(func() error { return m.DNSSync.Run(sctx) })
 	}
 	return g.Wait()
 }

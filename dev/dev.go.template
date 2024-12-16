@@ -58,9 +58,9 @@ func runServer(ctx context.Context) error {
 
 func inner() error {
 	ctx := context.Background()
-	g, _ := errgroup.WithContext(ctx)
-	g.Go(func() error { return runOperator(ctx) })
-	g.Go(func() error { return runServer(ctx) })
+	g, sctx := errgroup.WithContext(ctx)
+	g.Go(func() error { return runOperator(sctx) })
+	g.Go(func() error { return runServer(sctx) })
 	return g.Wait()
 }
 

@@ -49,7 +49,7 @@ func New(o *Opts) (*Main, error) {
 // Runs the application.
 // Blocks until one of the components fail with an error
 func (m *Main) Run(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
-	g.Go(func() error { return m.Server.Run(ctx) })
+	g, sctx := errgroup.WithContext(ctx)
+	g.Go(func() error { return m.Server.Run(sctx) })
 	return g.Wait()
 }
